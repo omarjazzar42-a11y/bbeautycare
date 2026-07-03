@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bahsas Care Pharmacy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0F4C4A',
+            secondary: '#E8D5C4',
+            accent: '#D4A574',
+          },
+          fontFamily: {
+            heading: ['Fraunces', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; color: #1A2E2C; background: #FAF7F2; margin: 0; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Fraunces', sans-serif; }
+    .animate-on-scroll { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+    /* Layout guard: force all top-level elements to stack vertically */
+    body > header, body > section, body > footer, body > nav,
+    #lp-root > header, #lp-root > section, #lp-root > footer, #lp-root > nav {
+      display: block !important;
+      width: 100% !important;
+      float: none !important;
+    }
+    #lp-root {
+      display: flex !important;
+      flex-direction: column !important;
+      width: 100% !important;
+      overflow-x: hidden !important;
+    }
+    .product-hidden { display: none !important; }
+
+    /* Cart / bag styles */
+    #bag-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 60;
+      width: 60px;
+      height: 60px;
+      border-radius: 9999px;
+      background: #2d5a4f;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 30px rgba(45,90,79,0.35);
+      border: 1px solid rgba(201,169,98,0.4);
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    #bag-fab:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(45,90,79,0.45); }
+    #bag-count {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 5px;
+      border-radius: 9999px;
+      background: #c9a962;
+      color: #1a1a1a;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', sans-serif;
+    }
+    #cart-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26,26,26,0.5);
+      z-index: 70;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    #cart-overlay.open { opacity: 1; pointer-events: auto; }
+    #cart-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: 100%;
+      max-width: 420px;
+      background: #FAF7F2;
+      z-index: 71;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -10px 0 40px rgba(0,0,0,0.15);
+    }
+    #cart-panel.open { transform: translateX(0); }
+    .cart-empty-msg { font-family: 'Inter', sans-serif; color: rgba(26,26,26,0.5); text-align: center; padding: 40px 20px; }
+    /* Category filter buttons */
+    .filter-btn {
+      background: #ffffff;
+      border-color: rgba(45,90,79,0.25);
+      color: rgba(26,26,26,0.65);
+    }
+    .filter-btn:hover {
+      border-color: #2d5a4f;
+      color: #2d5a4f;
+      background: #f5f1ea;
+    }
+    .active-filter {
+      background: #2d5a4f !important;
+      color: #ffffff !important;
+      border-color: #2d5a4f !important;
+    }
+    .product-filtered-out { display: none !important; }
+  </style>
+</head>
+<body style="display:block; width:100%; margin:0; padding:0;">
+<div id="lp-root">
+<header class="sticky top-0 z-50 backdrop-blur-xl bg-white/85 border-b border-[#2d5a4f]/10">
+  <nav class="max-w-6xl mx-auto px-6 sm:px-8 py-5 flex items-center justify-between">
+    <a href="#hero" class="flex items-center gap-3 group">
+      <span class="w-10 h-10 rounded-full bg-[#2d5a4f] flex items-center justify-center text-white transition-transform duration-500 group-hover:rotate-12 ring-1 ring-[#c9a962]/40">
+        <i data-lucide="leaf" class="w-5 h-5 text-[#c9a962]"></i>
+      </span>
+      <span class="text-2xl tracking-tight text-[#1a1a1a]" style="font-family: 'Cormorant Garamond', serif; font-weight: 600;">Bahsas Care</span>
+    </a>
+
+    <ul class="hidden md:flex items-center gap-9 text-sm text-[#1a1a1a]" style="font-family: 'Inter', sans-serif;">
+      <li><a href="#services" class="relative hover:text-[#2d5a4f] transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-px after:bg-[#2d5a4f] hover:after:w-full after:transition-all after:duration-300">Services</a></li>
+      <li><a href="#about" class="relative hover:text-[#2d5a4f] transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-px after:bg-[#2d5a4f] hover:after:w-full after:transition-all after:duration-300">About</a></li>
+      <li><a href="#testimonials" class="relative hover:text-[#2d5a4f] transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-px after:bg-[#2d5a4f] hover:after:w-full after:transition-all after:duration-300">Reviews</a></li>
+      <li><a href="#faq" class="relative hover:text-[#2d5a4f] transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-px after:bg-[#2d5a4f] hover:after:w-full after:transition-all after:duration-300">FAQ</a></li>
+      <li><a href="#shop" class="relative hover:text-[#2d5a4f] transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-px after:bg-[#2d5a4f] hover:after:w-full after:transition-all after:duration-300">Shop</a></li>
+      <li><a href="#contact" class="relative hover:text-[#2d5a4f] transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-px after:bg-[#2d5a4f] hover:after:w-full after:transition-all after:duration-300">Contact</a></li>
+    </ul>
+
+    <a href="tel:+96176350138" class="hidden md:inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#2d5a4f] text-white text-sm tracking-wide hover:bg-[#1a1a1a] transition-all duration-300 hover:shadow-lg hover:shadow-[#2d5a4f]/20 border border-[#c9a962]/30 hover:border-[#c9a962]" style="font-family: 'Inter', sans-serif;">
+      <i data-lucide="phone" class="w-4 h-4 text-[#c9a962]"></i>
+      Call Now
+    </a>
+
+    <button id="menu-btn" aria-label="Menu" class="md:hidden text-[#1a1a1a] p-2">
+      <i data-lucide="menu" class="w-6 h-6"></i>
+    </button>
+  </nav>
+
+  <div id="mobile-menu" class="hidden md:hidden border-t border-[#2d5a4f]/10 bg-white/95 backdrop-blur-xl">
+    <ul class="px-6 py-5 space-y-4 text-[#1a1a1a]" style="font-family: 'Inter', sans-serif;">
+      <li><a href="#services" class="block py-1 hover:text-[#2d5a4f] transition-colors">Services</a></li>
+      <li><a href="#about" class="block py-1 hover:text-[#2d5a4f] transition-colors">About</a></li>
+      <li><a href="#testimonials" class="block py-1 hover:text-[#2d5a4f] transition-colors">Reviews</a></li>
+      <li><a href="#faq" class="block py-1 hover:text-[#2d5a4f] transition-colors">FAQ</a></li>
+      <li><a href="#shop" class="block py-1 hover:text-[#2d5a4f] transition-colors">Shop</a></li>
+      <li><a href="#contact" class="block py-1 hover:text-[#2d5a4f] transition-colors">Contact</a></li>
+      <li><a href="tel:+96176350138" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#2d5a4f] text-white text-sm mt-2 border border-[#c9a962]/30">
+        <i data-lucide="phone" class="w-4 h-4 text-[#c9a962]"></i> Call +961 76 350138
+      </a></li>
+    </ul>
+  </div>
+
+  <script>
+    (function(){
+      const btn = document.getElementById('menu-btn');
+      const menu = document.getElementById('mobile-menu');
+      if (btn && menu) {
+        btn.addEventListener('click', () => menu.classList.toggle('hidden'));
+        menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => menu.classList.add('hidden')));
+      }
+    })();
+  </script>
+</header>
+
+<section id="hero" class="relative overflow-hidden bg-white py-20 md:py-28 lg:py-32">
+  <div aria-hidden="true" class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#f5f1ea] blur-3xl"></div>
+  <div aria-hidden="true" class="absolute bottom-0 right-0 w-[28rem] h-[28rem] rounded-full bg-[#2d5a4f]/15 blur-3xl"></div>
+
+  <div class="relative max-w-6xl mx-auto px-6 sm:px-8 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+
+    <div class="relative z-10">
+      <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[#f5f1ea] border border-[#1a1a1a]/5 mb-8">
+        <div class="flex items-center gap-0.5 text-[#c9a962]">
+          <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+          <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+          <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+          <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+          <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+        </div>
+        <span class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]" style="font-family: 'Inter', sans-serif;">5.0 on Google · Tripoli</span>
+      </div>
+
+      <h1 class="text-5xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight text-[#1a1a1a]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">
+        Wellness & Beauty,<br>
+        <span class="italic text-[#2d5a4f]">Curated With Care</span>
+      </h1>
+
+      <div class="mt-7 flex items-center gap-4 max-w-xl">
+        <span class="h-px w-12 bg-[#2d5a4f]"></span>
+        <span class="text-xs uppercase tracking-[0.25em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Est. Tripoli</span>
+      </div>
+
+      <p class="mt-6 text-lg leading-relaxed text-[#1a1a1a]/70 max-w-xl" style="font-family: 'Inter', sans-serif;">
+        Tripoli's trusted pharmacy and beauty destination — where licensed pharmacists meet premium skincare, vitamins, and personal care brands you'll love. Step into a space designed for your health and your glow.
+      </p>
+
+      <div class="mt-10 flex flex-wrap items-center gap-4">
+        <a href="tel:+96176350138" class="group inline-flex items-center gap-2 px-7 py-4 rounded-full bg-[#2d5a4f] text-white text-sm tracking-wide hover:bg-[#1a1a1a] transition-all duration-300 shadow-lg shadow-[#2d5a4f]/20 hover:shadow-xl hover:-translate-y-0.5" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="phone" class="w-4 h-4"></i>
+          Call +961 76 350138
+        </a>
+        <a href="#shop" class="group inline-flex items-center gap-2 px-7 py-4 rounded-full border border-[#1a1a1a]/30 text-[#1a1a1a] text-sm tracking-wide hover:bg-[#f5f1ea] hover:border-[#1a1a1a]/60 transition-all duration-300" style="font-family: 'Inter', sans-serif;">
+          Shop Now
+          <i data-lucide="shopping-bag" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i>
+        </a>
+        <a href="#services" class="group inline-flex items-center gap-2 px-7 py-4 rounded-full text-[#1a1a1a] text-sm tracking-wide hover:text-[#2d5a4f] transition-all duration-300" style="font-family: 'Inter', sans-serif;">
+          View Services
+          <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i>
+        </a>
+      </div>
+
+      <div class="mt-14 pt-8 border-t border-[#1a1a1a]/10 flex flex-wrap items-center gap-8 text-xs uppercase tracking-[0.2em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-4 h-4 text-[#2d5a4f]"></i> Licensed
+        </div>
+        <div class="flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4 text-[#2d5a4f]"></i> Premium Brands
+        </div>
+        <div class="flex items-center gap-2">
+          <i data-lucide="heart-handshake" class="w-4 h-4 text-[#2d5a4f]"></i> Trusted Care
+        </div>
+      </div>
+    </div>
+
+    <div class="relative">
+      <div aria-hidden="true" class="absolute -top-6 -right-6 w-32 h-32 rounded-sm bg-[#c9a962]/30 hidden md:block"></div>
+      <div aria-hidden="true" class="absolute -bottom-8 -left-8 w-40 h-40 rounded-sm bg-[#f5f1ea] hidden md:block"></div>
+
+      <div class="relative overflow-hidden shadow-2xl shadow-[#1a1a1a]/20">
+        <img src="https://zgnpmogdjnnhpwewavnr.supabase.co/storage/v1/object/public/project-images/8ea82bbd-810d-4ae2-be85-78485572f0ba/69ca4520-2da0-4ecc-9cef-4247e650e42d.png" alt="Bahsas Care Pharmacy storefront in Tripoli featuring curated beauty, skincare and wellness products" class="w-full h-[520px] md:h-[600px] object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#1a1a1a]/50 via-transparent to-transparent"></div>
+
+        <div class="absolute bottom-6 left-6 right-6 flex items-end justify-between">
+          <div class="text-white" style="font-family: 'Cormorant Garamond', serif;">
+            <p class="text-xs uppercase tracking-[0.25em] text-[#c9a962] mb-1" style="font-family: 'Inter', sans-serif;">Featured</p>
+            <p class="text-2xl italic">The Apothecary Edit</p>
+          </div>
+          <div class="hidden sm:flex items-center justify-center w-12 h-12 rounded-full bg-white/95 backdrop-blur">
+            <i data-lucide="arrow-up-right" class="w-5 h-5 text-[#1a1a1a]"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="absolute -bottom-6 -right-4 md:-right-8 bg-white border border-[#1a1a1a]/10 px-6 py-4 shadow-xl shadow-[#1a1a1a]/10 hidden sm:block">
+        <p class="text-[10px] uppercase tracking-[0.25em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Trusted by</p>
+        <p class="text-2xl text-[#1a1a1a] mt-1" style="font-family: 'Cormorant Garamond', serif;">10,000<span class="text-[#2d5a4f]">+</span> <span class="text-sm italic text-[#1a1a1a]/60">clients</span></p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+    (function(){
+      const btn = document.getElementById('menu-btn');
+      const menu = document.getElementById('mobile-menu');
+      if (btn && menu) {
+        btn.addEventListener('click', () => menu.classList.toggle('hidden'));
+        menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => menu.classList.add('hidden')));
+      }
+    })();
+  </script>
+
+<section id="services" class="py-20 md:py-28 lg:py-32" style="background-color: #ffffff;">
+  <div class="max-w-6xl mx-auto px-6 sm:px-8">
+    <div class="text-center mb-16 animate-on-scroll">
+      <span class="inline-block text-xs uppercase tracking-[0.25em] mb-5" style="color: #c9a962; font-family: 'Inter', sans-serif;">— Our Services —</span>
+      <h2 class="text-4xl md:text-5xl lg:text-6xl mb-6 leading-tight" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">Everything Your Wellness Needs</h2>
+      <p class="text-lg max-w-2xl mx-auto leading-relaxed" style="font-family: 'Inter', sans-serif; color: #1a1a1a;">From trusted prescriptions to curated beauty essentials — we bring pharmaceutical care and luxury wellness together under one roof in Tripoli.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+      <div class="group p-10 border transition-all duration-500 hover:-translate-y-2 animate-on-scroll" style="background-color: #ffffff; border-color: rgba(45,90,79,0.15);">
+        <div class="w-14 h-14 flex items-center justify-center mb-6 border transition-colors duration-500" style="border-color: #2d5a4f;">
+          <i data-lucide="pill" class="w-6 h-6" style="color: #2d5a4f;"></i>
+        </div>
+        <h3 class="text-2xl mb-4" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">Prescription Medications</h3>
+        <p class="leading-relaxed" style="font-family: 'Inter', sans-serif; color: #1a1a1a;">Licensed pharmacists fulfilling your prescriptions with accuracy, privacy, and personalized counseling.</p>
+        <div class="mt-8 h-px w-12 transition-all duration-500 group-hover:w-24" style="background-color: #2d5a4f;"></div>
+      </div>
+
+      <div class="group p-10 border transition-all duration-500 hover:-translate-y-2 animate-on-scroll" style="background-color: #ffffff; border-color: rgba(45,90,79,0.15);">
+        <div class="w-14 h-14 flex items-center justify-center mb-6 border" style="border-color: #2d5a4f;">
+          <i data-lucide="sparkles" class="w-6 h-6" style="color: #2d5a4f;"></i>
+        </div>
+        <h3 class="text-2xl mb-4" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">Skincare & Beauty</h3>
+        <p class="leading-relaxed" style="font-family: 'Inter', sans-serif; color: #1a1a1a;">A handpicked edit of dermatologist-approved skincare, cosmetics, and luxury beauty brands.</p>
+        <div class="mt-8 h-px w-12 transition-all duration-500 group-hover:w-24" style="background-color: #2d5a4f;"></div>
+      </div>
+
+      <div class="group p-10 border transition-all duration-500 hover:-translate-y-2 animate-on-scroll" style="background-color: #ffffff; border-color: rgba(45,90,79,0.15);">
+        <div class="w-14 h-14 flex items-center justify-center mb-6 border" style="border-color: #2d5a4f;">
+          <i data-lucide="leaf" class="w-6 h-6" style="color: #2d5a4f;"></i>
+        </div>
+        <h3 class="text-2xl mb-4" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">Vitamins & Supplements</h3>
+        <p class="leading-relaxed" style="font-family: 'Inter', sans-serif; color: #1a1a1a;">Premium vitamins, minerals, and natural supplements to support your daily health goals.</p>
+        <div class="mt-8 h-px w-12 transition-all duration-500 group-hover:w-24" style="background-color: #2d5a4f;"></div>
+      </div>
+
+      <div class="group p-10 border transition-all duration-500 hover:-translate-y-2 animate-on-scroll" style="background-color: #ffffff; border-color: rgba(45,90,79,0.15);">
+        <div class="w-14 h-14 flex items-center justify-center mb-6 border" style="border-color: #2d5a4f;">
+          <i data-lucide="heart" class="w-6 h-6" style="color: #2d5a4f;"></i>
+        </div>
+        <h3 class="text-2xl mb-4" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">Personal Care</h3>
+        <p class="leading-relaxed" style="font-family: 'Inter', sans-serif; color: #1a1a1a;">Daily essentials for hygiene, haircare, oral health, and self-care — trusted brands you love.</p>
+        <div class="mt-8 h-px w-12 transition-all duration-500 group-hover:w-24" style="background-color: #2d5a4f;"></div>
+      </div>
+
+      <div class="group p-10 border transition-all duration-500 hover:-translate-y-2 animate-on-scroll" style="background-color: #ffffff; border-color: rgba(45,90,79,0.15);">
+        <div class="w-14 h-14 flex items-center justify-center mb-6 border" style="border-color: #2d5a4f;">
+          <i data-lucide="baby" class="w-6 h-6" style="color: #2d5a4f;"></i>
+        </div>
+        <h3 class="text-2xl mb-4" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">Baby & Mother Care</h3>
+        <p class="leading-relaxed" style="font-family: 'Inter', sans-serif; color: #1a1a1a;">Gentle, pediatrician-recommended products for newborns, infants, and expecting mothers.</p>
+        <div class="mt-8 h-px w-12 transition-all duration-500 group-hover:w-24" style="background-color: #2d5a4f;"></div>
+      </div>
+
+      <div class="group p-10 border transition-all duration-500 hover:-translate-y-2 animate-on-scroll" style="background-color: #ffffff; border-color: rgba(45,90,79,0.15);">
+        <div class="w-14 h-14 flex items-center justify-center mb-6 border" style="border-color: #2d5a4f;">
+          <i data-lucide="stethoscope" class="w-6 h-6" style="color: #2d5a4f;"></i>
+        </div>
+        <h3 class="text-2xl mb-4" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">Health Consultations</h3>
+        <p class="leading-relaxed" style="font-family: 'Inter', sans-serif; color: #1a1a1a;">One-on-one guidance from our pharmacists — blood pressure checks, advice, and wellness planning.</p>
+        <div class="mt-8 h-px w-12 transition-all duration-500 group-hover:w-24" style="background-color: #2d5a4f;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="py-20 md:py-28 lg:py-32" style="background-color: #ffffff;">
+  <div class="max-w-6xl mx-auto px-6 sm:px-8">
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+      <div class="relative animate-on-scroll order-2 lg:order-1">
+        <div class="absolute -top-6 -left-6 w-32 h-32 -z-0" style="background-color: #f5f1ea; opacity: 1;"></div>
+        <div class="absolute -bottom-6 -right-6 w-40 h-40 -z-0" style="background-color: #c9a962; opacity: 0.35;"></div>
+        <img src="https://zgnpmogdjnnhpwewavnr.supabase.co/storage/v1/object/public/project-images/8ea82bbd-810d-4ae2-be85-78485572f0ba/a75eaa5f-ccb1-4da2-af60-f6e7f2b92672.png" alt="Bright and airy interior of Bahsas Care pharmacy in Tripoli featuring white shelves, soft natural lighting, and elegantly displayed premium skincare and beauty products" class="relative w-full h-auto shadow-2xl z-10" style="object-fit: cover;">
+        
+        <div class="absolute -bottom-8 left-6 right-6 lg:left-10 lg:right-auto p-5 shadow-xl z-20 flex items-center gap-4" style="background-color: #ffffff; border: 1px solid #f5f1ea;">
+          <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background-color: #2d5a4f;">
+            <i data-lucide="shield-check" class="w-6 h-6" style="color: #c9a962;"></i>
+          </div>
+          <div>
+            <div class="text-xs uppercase tracking-widest" style="font-family: 'Inter', sans-serif; color: #2d5a4f; letter-spacing: 0.15em;">Fully</div>
+            <div class="text-lg" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a; font-weight: 500;">Licensed Pharmacy</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="animate-on-scroll order-1 lg:order-2">
+        <span class="inline-block text-xs uppercase mb-6" style="font-family: 'Inter', sans-serif; color: #2d5a4f; font-weight: 500; letter-spacing: 0.25em;">— About Bahsas Care</span>
+        <h2 class="text-4xl md:text-5xl lg:text-6xl mb-8 leading-[1.1]" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a; font-weight: 400;">Where Pharmacy Meets <em style="color: #2d5a4f; font-style: italic;">Beauty Wellness</em></h2>
+        <p class="text-lg leading-relaxed mb-5" style="font-family: 'Inter', sans-serif; color: #1a1a1a; opacity: 0.85;">In the heart of Tripoli, Bahsas Care was founded on a simple idea: healthcare and self-care belong together. We blend the trust of a fully licensed pharmacy with the elegance of a curated beauty destination.</p>
+        <p class="text-lg leading-relaxed mb-10" style="font-family: 'Inter', sans-serif; color: #1a1a1a; opacity: 0.85;">Our pharmacists guide every customer with personal attention, while our shelves are stocked with carefully selected premium beauty and skincare brands you can trust.</p>
+
+        <div class="grid grid-cols-3 gap-4 mb-10">
+          <div class="text-center p-6" style="background-color: #f5f1ea; border: 1px solid #f5f1ea;">
+            <i data-lucide="badge-check" class="w-7 h-7 mx-auto mb-3" style="color: #2d5a4f;"></i>
+            <div class="text-xs uppercase tracking-widest" style="font-family: 'Inter', sans-serif; color: #1a1a1a; font-weight: 500; letter-spacing: 0.15em;">Licensed</div>
+          </div>
+          <div class="text-center p-6" style="background-color: #f5f1ea; border: 1px solid #f5f1ea;">
+            <i data-lucide="heart-handshake" class="w-7 h-7 mx-auto mb-3" style="color: #2d5a4f;"></i>
+            <div class="text-xs uppercase tracking-widest" style="font-family: 'Inter', sans-serif; color: #1a1a1a; font-weight: 500; letter-spacing: 0.15em;">Trusted</div>
+          </div>
+          <div class="text-center p-6" style="background-color: #f5f1ea; border: 1px solid #f5f1ea;">
+            <i data-lucide="gem" class="w-7 h-7 mx-auto mb-3" style="color: #c9a962;"></i>
+            <div class="text-xs uppercase tracking-widest" style="font-family: 'Inter', sans-serif; color: #1a1a1a; font-weight: 500; letter-spacing: 0.15em;">Premium</div>
+          </div>
+        </div>
+
+        <a href="tel:+96176350138" class="inline-flex items-center gap-3 px-8 py-4 text-sm uppercase transition-all duration-300 hover:gap-4" style="background-color: #2d5a4f; color: #ffffff; font-family: 'Inter', sans-serif; font-weight: 500; letter-spacing: 0.15em;">
+          <i data-lucide="phone" class="w-4 h-4"></i> Speak With Our Pharmacist
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="stats" class="py-20 md:py-28 lg:py-32 relative overflow-hidden" style="background-color: #ffffff;">
+  <div class="absolute top-0 right-0 w-96 h-96 rounded-full opacity-20 -translate-y-1/2 translate-x-1/2" style="background-color: #c9a962;"></div>
+  <div class="absolute bottom-0 left-0 w-80 h-80 rounded-full opacity-10 translate-y-1/2 -translate-x-1/2" style="background-color: #2d5a4f;"></div>
+
+  <div class="max-w-6xl mx-auto px-6 sm:px-8 relative z-10">
+    <div class="text-center mb-16 animate-on-scroll">
+      <span class="inline-block text-xs uppercase tracking-[0.3em] mb-6 pb-2 border-b" style="color: #2d5a4f; border-color: #2d5a4f; font-family: 'Inter', sans-serif;">By the Numbers</span>
+      <h2 class="text-4xl md:text-5xl lg:text-6xl font-light leading-tight" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">Trusted by the<br><em style="color: #2d5a4f;">Tripoli Community</em></h2>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-px" style="background-color: rgba(26, 26, 26, 0.15);">
+      <div class="text-center p-10 animate-on-scroll" style="background-color: #ffffff;">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-6 border" style="border-color: #c9a962;">
+          <i data-lucide="star" class="w-6 h-6" style="color: #c9a962;" fill="#c9a962"></i>
+        </div>
+        <div class="text-5xl md:text-6xl mb-3 font-light" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">5<span style="color: #c9a962;">★</span></div>
+        <div class="text-xs uppercase tracking-[0.2em]" style="font-family: 'Inter', sans-serif; color: #1a1a1a;">Google Rating</div>
+      </div>
+
+      <div class="text-center p-10 animate-on-scroll" style="background-color: #ffffff;">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-6 border" style="border-color: #2d5a4f;">
+          <i data-lucide="shield-check" class="w-6 h-6" style="color: #2d5a4f;"></i>
+        </div>
+        <div class="text-5xl md:text-6xl mb-3 font-light" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">100<span style="color: #2d5a4f;">%</span></div>
+        <div class="text-xs uppercase tracking-[0.2em]" style="font-family: 'Inter', sans-serif; color: #1a1a1a;">Authentic Products</div>
+      </div>
+
+      <div class="text-center p-10 animate-on-scroll" style="background-color: #ffffff;">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-6 border" style="border-color: #2d5a4f;">
+          <i data-lucide="users" class="w-6 h-6" style="color: #2d5a4f;"></i>
+        </div>
+        <div class="text-5xl md:text-6xl mb-3 font-light" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">1000<span style="color: #2d5a4f;">+</span></div>
+        <div class="text-xs uppercase tracking-[0.2em]" style="font-family: 'Inter', sans-serif; color: #1a1a1a;">Happy Customers</div>
+      </div>
+
+      <div class="text-center p-10 animate-on-scroll" style="background-color: #ffffff;">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-6 border" style="border-color: #2d5a4f;">
+          <i data-lucide="clock" class="w-6 h-6" style="color: #2d5a4f;"></i>
+        </div>
+        <div class="text-5xl md:text-6xl mb-3 font-light" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">24<span style="color: #2d5a4f;">/</span>7</div>
+        <div class="text-xs uppercase tracking-[0.2em]" style="font-family: 'Inter', sans-serif; color: #1a1a1a;">Care Promise</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="testimonials" class="py-20 md:py-28 lg:py-32 relative" style="background-color: #ffffff;">
+  <div class="max-w-6xl mx-auto px-6 sm:px-8">
+    <div class="text-center mb-16 animate-on-scroll">
+      <span class="inline-block text-xs uppercase tracking-widest mb-5" style="color: #2d5a4f; font-family: 'Inter', sans-serif; letter-spacing: 0.2em;">— Customer Love —</span>
+      <h2 class="text-4xl md:text-5xl lg:text-6xl mb-6 font-normal" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">What Tripoli Says About Us</h2>
+      <div class="inline-flex items-center gap-3 px-6 py-2.5" style="background-color: #ffffff; border: 1px solid #2d5a4f;">
+        <div class="flex gap-0.5">
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+        </div>
+        <span class="text-sm font-medium tracking-wide" style="font-family: 'Inter', sans-serif; color: #1a1a1a;">5.0 on Google</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+      <div class="p-10 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl animate-on-scroll" style="background-color: #f5f1ea; border: 1px solid rgba(45, 90, 79, 0.25);">
+        <i data-lucide="quote" class="w-9 h-9 mb-6" style="color: #2d5a4f;"></i>
+        <div class="flex gap-0.5 mb-6">
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+        </div>
+        <p class="text-lg leading-relaxed mb-8 italic" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">"A moderate size drugstore with good location, very helpful staff, and discounted prices."</p>
+        <div class="flex items-center gap-4 pt-6 border-t" style="border-color: rgba(45, 90, 79, 0.3);">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: #2d5a4f;">
+            <span class="text-sm font-medium tracking-wider" style="font-family: 'Inter', sans-serif; color: #ffffff;">MN</span>
+          </div>
+          <div>
+            <div class="font-medium text-base" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">Mohamad Nasri</div>
+            <div class="text-xs mt-1 tracking-wide" style="font-family: 'Inter', sans-serif; color: #1a1a1a; opacity: 0.6;">143 reviews · 8 years ago</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-10 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl animate-on-scroll md:-translate-y-4 md:hover:-translate-y-6" style="background-color: #2d5a4f; border: 1px solid #c9a962;">
+        <i data-lucide="quote" class="w-9 h-9 mb-6" style="color: #c9a962;"></i>
+        <div class="flex gap-0.5 mb-6">
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+        </div>
+        <p class="text-lg leading-relaxed mb-8 italic" style="font-family: 'Cormorant Garamond', serif; color: #ffffff;">"Good pharmacy. Friendly people."</p>
+        <div class="flex items-center gap-4 pt-6 border-t" style="border-color: rgba(201, 169, 98, 0.4);">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: #c9a962;">
+            <span class="text-sm font-medium tracking-wider" style="font-family: 'Inter', sans-serif; color: #ffffff;">MO</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-medium text-base" style="font-family: 'Cormorant Garamond', serif; color: #ffffff;">M. Bassam Oueida</span>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase tracking-widest" style="background-color: #c9a962; color: #ffffff; font-family: 'Inter', sans-serif;">
+                <i data-lucide="badge-check" class="w-3 h-3"></i>Local Guide
+              </span>
+            </div>
+            <div class="text-xs mt-1 tracking-wide" style="font-family: 'Inter', sans-serif; color: #f5f1ea; opacity: 0.7;">209 reviews · 35 photos · 4 years ago</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-10 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl animate-on-scroll" style="background-color: #f5f1ea; border: 1px solid rgba(45, 90, 79, 0.25);">
+        <i data-lucide="quote" class="w-9 h-9 mb-6" style="color: #2d5a4f;"></i>
+        <div class="flex gap-0.5 mb-6">
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+          <i data-lucide="star" class="w-4 h-4" style="color: #c9a962;" fill="#c9a962"></i>
+        </div>
+        <p class="text-lg leading-relaxed mb-8 italic" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">"Nice"</p>
+        <div class="flex items-center gap-4 pt-6 border-t" style="border-color: rgba(45, 90, 79, 0.3);">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: #2d5a4f;">
+            <span class="text-sm font-medium tracking-wider" style="font-family: 'Inter', sans-serif; color: #ffffff;">SA</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-medium text-base" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a;">ṠẠ Ṃ ẸṘ</span>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase tracking-widest" style="background-color: #2d5a4f; color: #ffffff; font-family: 'Inter', sans-serif;">
+                <i data-lucide="badge-check" class="w-3 h-3"></i>Local Guide
+              </span>
+            </div>
+            <div class="text-xs mt-1 tracking-wide" style="font-family: 'Inter', sans-serif; color: #1a1a1a; opacity: 0.6;">105 reviews · 15 photos · 3 years ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="relative overflow-hidden py-20 md:py-28 lg:py-32" style="background: #ffffff;">
+  <div class="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-20" style="background: #2d5a4f;"></div>
+  <div class="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full blur-3xl opacity-10" style="background: #c9a962;"></div>
+
+  <div class="relative max-w-6xl mx-auto px-6 sm:px-8">
+    <div class="text-center mb-16">
+      <p class="text-sm uppercase tracking-[0.3em] mb-5" style="color: #2d5a4f; font-family: 'Inter', sans-serif;">Get In Touch</p>
+      <h2 class="text-4xl md:text-5xl lg:text-6xl mb-5" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a; font-weight: 500;">Visit Bahsas Care</h2>
+      <div class="w-16 h-px mx-auto mb-6" style="background: #c9a962;"></div>
+      <p class="text-lg leading-relaxed max-w-2xl mx-auto" style="color: #1a1a1a; font-family: 'Inter', sans-serif;">Order your prescriptions, beauty products, or health essentials directly via WhatsApp. Fast, simple, and personal.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-5 gap-8 items-start">
+      
+      <!-- Contact Info Cards -->
+      <div class="lg:col-span-2 space-y-4">
+        <a href="tel:+96176350138" class="block p-6 rounded-2xl border transition-all hover:-translate-y-1 hover:shadow-xl duration-300 group" style="background: #f5f1ea; border-color: rgba(45,90,79,0.2);">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110" style="background: #2d5a4f;">
+              <i data-lucide="phone" class="w-5 h-5" style="color: #c9a962;"></i>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-wider mb-1" style="color: #2d5a4f; font-family: 'Inter', sans-serif;">Call Pharmacy</p>
+              <p class="text-lg" style="color: #1a1a1a; font-family: 'Cormorant Garamond', serif;">+961 76 350 138</p>
+            </div>
+          </div>
+        </a>
+
+        <a href="#shop" class="block p-6 rounded-2xl border transition-all hover:-translate-y-1 hover:shadow-xl duration-300 group" style="background: #f5f1ea; border-color: rgba(45,90,79,0.2);">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110" style="background: #2d5a4f;">
+              <i data-lucide="shopping-bag" class="w-5 h-5" style="color: #c9a962;"></i>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-wider mb-1" style="color: #2d5a4f; font-family: 'Inter', sans-serif;">Browse Shop</p>
+              <p class="text-lg" style="color: #1a1a1a; font-family: 'Cormorant Garamond', serif;">Visit Our Shop</p>
+            </div>
+          </div>
+        </a>
+
+        <div class="p-6 rounded-2xl border" style="background: #f5f1ea; border-color: rgba(45,90,79,0.2);">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style="background: #2d5a4f;">
+              <i data-lucide="clock" class="w-5 h-5" style="color: #c9a962;"></i>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-wider mb-1" style="color: #2d5a4f; font-family: 'Inter', sans-serif;">Hours</p>
+              <p class="text-lg" style="color: #1a1a1a; font-family: 'Cormorant Garamond', serif;">9 AM - 9 PM</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6 rounded-2xl border flex items-center gap-3" style="background: #f5f1ea; border-color: rgba(45,90,79,0.2);">
+          <div class="flex">
+            <i data-lucide="star" class="w-5 h-5 fill-current" style="color: #c9a962;"></i>
+            <i data-lucide="star" class="w-5 h-5 fill-current" style="color: #c9a962;"></i>
+            <i data-lucide="star" class="w-5 h-5 fill-current" style="color: #c9a962;"></i>
+            <i data-lucide="star" class="w-5 h-5 fill-current" style="color: #c9a962;"></i>
+            <i data-lucide="star" class="w-5 h-5 fill-current" style="color: #c9a962;"></i>
+          </div>
+          <p class="text-sm" style="color: #1a1a1a; font-family: 'Inter', sans-serif;">5.0 on Google Reviews</p>
+        </div>
+      </div>
+
+      <!-- WhatsApp Order Form -->
+      <div class="lg:col-span-3">
+        <div class="relative p-8 md:p-10 rounded-3xl border shadow-xl" style="background: #ffffff; border-color: rgba(45,90,79,0.2);">
+          <div class="absolute -top-3 -right-3 w-20 h-20 rounded-full blur-2xl opacity-40" style="background: #c9a962;"></div>
+          
+          <form id="contact-form" class="relative space-y-5" onsubmit="event.preventDefault();">
+            <div>
+              <label for="name" class="block text-xs uppercase tracking-wider mb-2" style="color: #2d5a4f; font-family: 'Inter', sans-serif;">Your Name</label>
+              <input type="text" id="name" name="name" required 
+                class="w-full px-5 py-4 rounded-xl border transition-all focus:ring-2 outline-none" 
+                style="background: #f5f1ea; border-color: rgba(45,90,79,0.3); color: #1a1a1a; font-family: 'Inter', sans-serif;"
+                placeholder="John Doe">
+            </div>
+
+            <div>
+              <label for="products" class="block text-xs uppercase tracking-wider mb-2" style="color: #2d5a4f; font-family: 'Inter', sans-serif;">Products</label>
+              <textarea id="products" name="products" rows="4" required 
+                class="w-full px-5 py-4 rounded-xl border transition-all focus:ring-2 outline-none resize-none" 
+                style="background: #f5f1ea; border-color: rgba(45,90,79,0.3); color: #1a1a1a; font-family: 'Inter', sans-serif;"
+                placeholder="List the products you'd like to order..."></textarea>
+            </div>
+
+            <div>
+              <label for="phone" class="block text-xs uppercase tracking-wider mb-2" style="color: #2d5a4f; font-family: 'Inter', sans-serif;">Phone Number</label>
+              <input type="tel" id="phone" name="phone" required 
+                class="w-full px-5 py-4 rounded-xl border transition-all focus:ring-2 outline-none" 
+                style="background: #f5f1ea; border-color: rgba(45,90,79,0.3); color: #1a1a1a; font-family: 'Inter', sans-serif;"
+                placeholder="+961 ...">
+            </div>
+
+            <a id="whatsapp-checkout" href="https://wa.me/96176350138" target="_blank" rel="noopener noreferrer"
+              class="w-full px-8 py-4 rounded-xl font-medium text-base transition-all hover:-translate-y-0.5 hover:shadow-2xl duration-300 flex items-center justify-center gap-2 group" 
+              style="background: #2d5a4f; color: #ffffff; font-family: 'Inter', sans-serif;">
+              Checkout on WhatsApp
+              <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i>
+            </a>
+
+            <p id="form-status" class="text-sm text-center" style="color: #2d5a4f; font-family: 'Inter', sans-serif;">Your order details will be sent securely via WhatsApp.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const nameInput = document.getElementById('name');
+      const productsInput = document.getElementById('products');
+      const phoneInput = document.getElementById('phone');
+      const waLink = document.getElementById('whatsapp-checkout');
+      const baseUrl = 'https://wa.me/96176350138';
+
+      function updateWhatsAppLink() {
+        const name = nameInput ? nameInput.value.trim() : '';
+        const products = productsInput ? productsInput.value.trim() : '';
+        const phone = phoneInput ? phoneInput.value.trim() : '';
+        const message = `Hello, I'd like to order. Name: ${name}, Products: ${products}, Phone: ${phone}`;
+        if (waLink) {
+          waLink.href = `${baseUrl}?text=${encodeURIComponent(message)}`;
+        }
+      }
+
+      [nameInput, productsInput, phoneInput].forEach(el => {
+        if (el) {
+          el.addEventListener('input', updateWhatsAppLink);
+          el.addEventListener('change', updateWhatsAppLink);
+        }
+      });
+
+      updateWhatsAppLink();
+    })();
+  </script>
+</section>
+
+
+<section id="shop" class="relative py-20 md:py-28 lg:py-32 bg-white overflow-hidden">
+  <div aria-hidden="true" class="absolute top-0 right-0 w-96 h-96 rounded-full bg-[#2d5a4f]/10 blur-3xl"></div>
+  <div aria-hidden="true" class="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-[#c9a962]/10 blur-3xl"></div>
+
+  <div class="relative max-w-6xl mx-auto px-6 sm:px-8">
+
+    <div class="text-center mb-16 md:mb-20 animate-on-scroll">
+      <div class="inline-flex items-center gap-3 mb-6">
+        <span class="h-px w-10 bg-[#2d5a4f]"></span>
+        <span class="text-xs uppercase tracking-[0.25em] text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Curated Collection</span>
+        <span class="h-px w-10 bg-[#2d5a4f]"></span>
+      </div>
+      <h2 class="text-4xl md:text-5xl lg:text-6xl tracking-tight text-[#1a1a1a]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">
+        Our <span class="italic text-[#2d5a4f]">Shop</span>
+      </h2>
+      <p class="mt-6 text-lg leading-relaxed text-[#1a1a1a]/70 max-w-2xl mx-auto" style="font-family: 'Inter', sans-serif;">
+        Discover our handpicked selection of premium beauty and wellness essentials, crafted with the finest ingredients to elevate your daily ritual.
+      </p>
+    </div>
+
+    <!-- Category filter bar -->
+    <div class="flex flex-wrap justify-center gap-2 mb-10 animate-on-scroll">
+      <button onclick="filterShop('all')" data-filter="all"
+        class="filter-btn active-filter px-5 py-2 rounded-full text-sm border transition-all duration-200"
+        style="font-family:'Inter',sans-serif;">All Products</button>
+      <button onclick="filterShop('skincare')" data-filter="skincare"
+        class="filter-btn px-5 py-2 rounded-full text-sm border transition-all duration-200"
+        style="font-family:'Inter',sans-serif;">Skincare</button>
+      <button onclick="filterShop('sun-care')" data-filter="sun-care"
+        class="filter-btn px-5 py-2 rounded-full text-sm border transition-all duration-200"
+        style="font-family:'Inter',sans-serif;">Sun Care</button>
+      <button onclick="filterShop('hair')" data-filter="hair"
+        class="filter-btn px-5 py-2 rounded-full text-sm border transition-all duration-200"
+        style="font-family:'Inter',sans-serif;">Hair Care</button>
+      <button onclick="filterShop('baby')" data-filter="baby"
+        class="filter-btn px-5 py-2 rounded-full text-sm border transition-all duration-200"
+        style="font-family:'Inter',sans-serif;">Baby & Mother</button>
+      <button onclick="filterShop('makeup')" data-filter="makeup"
+        class="filter-btn px-5 py-2 rounded-full text-sm border transition-all duration-200"
+        style="font-family:'Inter',sans-serif;">Makeup</button>
+      <button onclick="filterShop('personal-care')" data-filter="personal-care"
+        class="filter-btn px-5 py-2 rounded-full text-sm border transition-all duration-200"
+        style="font-family:'Inter',sans-serif;">Personal Care</button>
+      <button onclick="filterShop('sets')" data-filter="sets"
+        class="filter-btn px-5 py-2 rounded-full text-sm border transition-all duration-200"
+        style="font-family:'Inter',sans-serif;">Kits & Sets</button>
+    </div>
+
+    <!-- Product count -->
+    <p id="product-count" class="text-center text-sm mb-8" style="font-family:'Inter',sans-serif; color:rgba(26,26,26,0.5);">Showing all 41 products</p>
+
+    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+
+      <!-- ===== Original 5 products ===== -->
+
+      <article class="group animate-on-scroll" data-category="sun-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img1.jpg" alt="A-Derma Protect AC Fluide SPF50+ mattifying sunscreen for acne-prone oily skin" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        
+          <div class="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[#1a1a1a]" style="font-family: 'Inter', sans-serif;">Bestseller</span>
+          </div>
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Écran Protect AC Fluide</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">A-Derma · Sun Protection</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$22</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Mattifying sun protection fluid formulated for blemish-prone and oily skin.</p>
+        <button onclick="addToBag('Écran Protect AC Fluide', 22, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <article class="group animate-on-scroll" data-category="sun-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img2.jpg" alt="A-Derma Protect Cream SPF50+ for dry fragile skin" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Écran Protect Cream</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">A-Derma · Sun Protection</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$20</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">High protection sunscreen cream gently formulated for sensitive skin.</p>
+        <button onclick="addToBag('Écran Protect Cream', 20, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <article class="group animate-on-scroll" data-category="hair">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img3.jpg" alt="Ducray Kelual DS Original anti-dandruff shampoo" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        
+          <div class="absolute top-4 left-4 px-3 py-1 bg-[#2d5a4f]/90 backdrop-blur-sm rounded-full">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[#c9a962]" style="font-family: 'Inter', sans-serif;">Premium</span>
+          </div>
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Kelual DS Shampooing Original</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Ducray · Hair Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$38.50</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Intensive anti-dandruff treatment shampoo for severe scalp conditions.</p>
+        <button onclick="addToBag('Kelual DS Shampooing Original', 38.50, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <article class="group animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img4.jpg" alt="Avène Cicalfate+ repairing protective cream" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        
+          <div class="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[#1a1a1a]" style="font-family: 'Inter', sans-serif;">Bestseller</span>
+          </div>
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Cicalfate+ Crème Réparatrice</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Avène · Réparatrice</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$25</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Repairing protective cream that soothes damaged and irritated skin.</p>
+        <button onclick="addToBag('Cicalfate+ Crème Réparatrice', 25, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <article class="group animate-on-scroll" data-category="baby">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img5.jpg" alt="Klorane Bébé gentle cleansing gel for body and hair" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        
+          <div class="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[#1a1a1a]" style="font-family: 'Inter', sans-serif;">Essential</span>
+          </div>
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Bébé Gel Lavant 500ml</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Klorane · Baby Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$20</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Gentle hair and body wash for babies enriched with soothing calendula.</p>
+        <button onclick="addToBag('Bébé Gel Lavant 500ml', 20, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- ===== 20 new products (initially visible: first batch up to 9 total, rest hidden behind "Show All") ===== -->
+
+      <!-- 1. Avène Sunscreen Cream -->
+      <article class="group animate-on-scroll" data-category="sun-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img6.jpg" alt="Avène Eau Thermale sunscreen cream SPF50+" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Sunscreen Cream</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Avène · Sun Protection</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$24</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Soothing broad-spectrum protection formulated with Avène thermal spring water.</p>
+        <button onclick="addToBag('Sunscreen Cream', 24, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 2. Ducray Hidrosis Control Roll-On -->
+      <article class="group animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img7.jpg" alt="Ducray Hidrosis Control roll-on anti-perspirant" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Hidrosis Control Roll-On</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Ducray · Personal Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$17</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Targeted roll-on that helps regulate excess perspiration for lasting comfort.</p>
+        <button onclick="addToBag('Hidrosis Control Roll-On', 17, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 3. A-Derma Dermalibour+ Cica Crème -->
+      <article class="group animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img8.jpg" alt="A-Derma Dermalibour+ CICA repairing cream" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Dermalibour+ Cica Crème Réparatrice</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">A-Derma · Réparatrice</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$20</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Repairing cream that helps soothe and restore irritated or compromised skin.</p>
+        <button onclick="addToBag('Dermalibour+ Cica Crème Réparatrice', 20, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 4. René Furterer Color Glow Masque -->
+      <article class="group animate-on-scroll" data-category="hair">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img9.jpg" alt="René Furterer Color Glow shampoo and conditioner set" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Color Glow Masque</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">René Furterer · Hair Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$43</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Nourishing mask that revives shine and protects color-treated hair.</p>
+        <button onclick="addToBag('Color Glow Masque', 43, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 5. Ducray Dexyane MED -->
+      <article class="group animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img10.jpg" alt="Ducray Dexyane MED eczema treatment cream" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Dexyane MED</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Ducray · Réparatrice</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$30</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Soothing emollient cream that helps relieve dry, irritated, atopic-prone skin.</p>
+        <button onclick="addToBag('Dexyane MED', 30, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- ====== Items below are hidden by default behind "Show All Products" ====== -->
+
+      <!-- 11. Avène Cleanance Sunscreen -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="sun-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img11.jpg" alt="Avène Cleanance sunscreen SPF50+ for oily blemish-prone skin" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Cleanance Sunscreen</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Avène · Sun Protection</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$23</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Lightweight sun protection designed for oily, blemish-prone skin.</p>
+        <button onclick="addToBag('Cleanance Sunscreen', 23, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 12. A-Derma Biology AC Gel Moussant -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img12.jpg" alt="A-Derma Biology AC purifying cleansing gel" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Biology AC Gel Moussant</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">A-Derma · Cleanser</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$19</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Foaming cleansing gel that purifies and helps reduce blemish-prone skin concerns.</p>
+        <button onclick="addToBag('Biology AC Gel Moussant', 19, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 13. Avène Cleanance Gel Nettoyant -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img13.jpg" alt="Avène Cleanance cleansing gel for mixed oily skin" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Cleanance Gel Nettoyant</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Avène · Cleanser</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$24</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Gentle cleansing gel that removes impurities without disturbing skin's balance.</p>
+        <button onclick="addToBag('Cleanance Gel Nettoyant', 24, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 14. Avène Hydrance Aqua-Gel -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img14.jpg" alt="Avène Hydrance Aqua-Gel hydrating cream-in-gel" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Hydrance Aqua-Gel</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Avène · Moisturizer</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$32</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Lightweight hydrating gel that quenches dehydrated skin with a fresh finish.</p>
+        <button onclick="addToBag('Hydrance Aqua-Gel', 32, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 15. Avène Hydrance UV Light -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="sun-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img15.jpg" alt="Avène Hydrance UV light hydrating emulsion SPF30" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Hydrance UV Light</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Avène · Moisturizer + SPF</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$32</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Hydrating daily moisturizer with light texture and sun protection built in.</p>
+        <button onclick="addToBag('Hydrance UV Light', 32, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 16. René Furterer Sublime Curl Shampoo -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="hair">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img16.jpg" alt="René Furterer Sublime Curl enhancing shampoo" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Sublime Curl Shampoo</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">René Furterer · Hair Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$50</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Defining shampoo formulated to nourish, hydrate, and enhance natural curls.</p>
+        <button onclick="addToBag('Sublime Curl Shampoo', 50, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 17. Uriage Eau Thermale Crème d'Eau -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img17.jpg" alt="Uriage Eau Thermale Crème d'Eau water cream" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Eau Thermale Crème d'Eau</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Uriage · Moisturizer</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$33</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Featherlight water-cream that delivers a fresh burst of daily hydration.</p>
+        <button onclick="addToBag('Eau Thermale Crème d\'Eau', 33, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 18. Uriage Hyséac Mat Gel-Crème -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img18.jpg" alt="Uriage Hyséac Mat gel-crème for oily skin" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Hyséac Mat Gel-Crème</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Uriage · Moisturizer</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$30</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Mattifying gel-cream that controls shine while keeping oily skin balanced.</p>
+        <button onclick="addToBag('Hyséac Mat Gel-Crème', 30, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 19. Eucerin Hyaluron Filler -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img19.jpg" alt="Eucerin Hyaluron-Filler anti-wrinkle skincare set" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        
+          <div class="absolute top-4 left-4 px-3 py-1 bg-[#2d5a4f]/90 backdrop-blur-sm rounded-full">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[#c9a962]" style="font-family: 'Inter', sans-serif;">Premium</span>
+          </div>
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Hyaluron Filler</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Eucerin · Anti-Aging</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$119</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Anti-wrinkle care that helps fill and smooth fine lines for a refined look.</p>
+        <button onclick="addToBag('Hyaluron Filler', 119, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 20. Eucerin Hyaluron Filler + Elasticity -->
+      <article class="group product-hidden product-extra animate-on-scroll">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img20.jpg" alt="Eucerin Hyaluron-Filler + Elasticity skincare set" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        
+          <div class="absolute top-4 left-4 px-3 py-1 bg-[#2d5a4f]/90 backdrop-blur-sm rounded-full">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[#c9a962]" style="font-family: 'Inter', sans-serif;">Premium</span>
+          </div>
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Hyaluron Filler + Elasticity</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Eucerin · Anti-Aging</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$119</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Advanced formula targeting wrinkles and loss of firmness for mature skin.</p>
+        <button onclick="addToBag('Hyaluron Filler + Elasticity', 119, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 21. Avène Couvrance Fond de Teint -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="makeup">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img21.jpg" alt="Avène Couvrance correcteur de teint compact foundation cream SPF30" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Couvrance Fond de Teint</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Avène · Makeup</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$33</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Corrective foundation formulated for sensitive skin with full coverage.</p>
+        <button onclick="addToBag('Couvrance Fond de Teint', 33, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 22. Ducray Néoptide Expert -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="hair">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img22.jpg" alt="Ducray Neoptide Expert chronic hair loss kit with strengthening serum" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+          <div class="absolute top-4 left-4 px-3 py-1 bg-[#2d5a4f]/90 backdrop-blur-sm rounded-full">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[#c9a962]" style="font-family: 'Inter', sans-serif;">Premium</span>
+          </div>
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Néoptide Expert</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Ducray · Hair Treatment</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$71</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Targeted anti-hair-loss treatment to help strengthen and revive thinning hair.</p>
+        <button onclick="addToBag('Néoptide Expert', 71, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 23. Avène Vitamine C Sérum + Crème -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="sets">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img23.jpg" alt="Avène Vitamin Activ Cg Radiance Revealing Kit with serum and cream" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        
+          <div class="absolute top-4 left-4 px-3 py-1 bg-[#2d5a4f]/90 backdrop-blur-sm rounded-full">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[#c9a962]" style="font-family: 'Inter', sans-serif;">Premium Set</span>
+          </div>
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Vitamine C Sérum + Crème</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Avène · Brightening Set</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$109</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Brightening serum and cream duo that helps even tone and revive radiance.</p>
+        <button onclick="addToBag('Vitamine C Sérum + Crème', 109, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 24. Ducray Sérum Éclat + Concentré -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="sets">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img24.jpg" alt="Ducray Melascreen Triple Action Anti-Spots Kit serum, concentrate and eye contour" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        
+          <div class="absolute top-4 left-4 px-3 py-1 bg-[#2d5a4f]/90 backdrop-blur-sm rounded-full">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[#c9a962]" style="font-family: 'Inter', sans-serif;">Premium Set</span>
+          </div>
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Sérum Éclat + Concentré</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Ducray · Hair Care Set</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$76</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Radiance serum and concentrate duo formulated to revive dull, tired hair.</p>
+        <button onclick="addToBag('Sérum Éclat + Concentré', 76, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 25. Avène Mousse Nettoyant + Hydrance Aqua-Gel -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="sets">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img25.jpg" alt="Avène Hydration Booster Kit with micellar water, cleansing foam and Hydrance Aqua-Gel" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        
+          <div class="absolute top-4 left-4 px-3 py-1 bg-[#2d5a4f]/90 backdrop-blur-sm rounded-full">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[#c9a962]" style="font-family: 'Inter', sans-serif;">Premium Set</span>
+          </div>
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Mousse Nettoyant + Hydrance Aqua-Gel</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Avène · Cleanser & Moisturizer Set</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$62</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Complete cleanse-and-hydrate duo for a refreshed, balanced daily routine.</p>
+        <button onclick="addToBag('Mousse Nettoyant + Hydrance Aqua-Gel', 62, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 26. Avène Cleanance Eau Micellaire -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img26.jpg" alt="Avène Cleanance Eau Micellaire micellar water for oily blemish-prone skin" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Cleanance Eau Micellaire</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Avène · Cleanser</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$27.5</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Gentle micellar water that removes makeup and impurities from oily, blemish-prone skin.</p>
+        <button onclick="addToBag('Cleanance Eau Micellaire', 27.5, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 27. Ducray Extra-Doux Shampoo -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="hair">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img27.jpg" alt="Ducray Extra-Doux dermo-protective shampoo for delicate hair buy 2 get 1 free" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Extra-Doux Shampooing Dermo-Protecteur</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Ducray · Hair Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$48</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Ultra-gentle dermo-protective shampoo for delicate, fine or frequently washed hair.</p>
+        <button onclick="addToBag('Extra-Doux Shampooing Dermo-Protecteur', 48, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      <!-- 28. Bioderma Sébium Pore Refiner -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img28.jpg" alt="Bioderma Sébium Pore Refiner pore corrector for combination oily skin with cleansing bar" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Sébium Pore Refiner</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Bioderma · Skincare</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$22</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Pore-correcting care that tightens enlarged pores and refines skin texture for combination and oily skin.</p>
+        <button onclick="addToBag('Sébium Pore Refiner', 22, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+      
+      <!-- 29. Sun Protection Ultra-Light Fluid SPF50+ -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="sun-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img29.jpg" alt="Sun Protection Ultra-Light Fluid SPF50+ Eucerin" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Sun Protection Ultra-Light Fluid SPF50+</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Eucerin · Sun Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$30</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Ultra-light non-sticky, non-greasy sunscreen fluid with advanced spectral technology for all skin types.</p>
+        <button onclick="addToBag('Sun Protection Ultra-Light Fluid SPF50+', 30, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+      <!-- 30. Sébiaclear Mat+Pores Matifiant -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img30.jpg" alt="Sébiaclear Mat+Pores Matifiant SVR" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Sébiaclear Mat+Pores Matifiant</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">SVR · Skincare</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$19</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Mattifying moisturiser that regulates sebum and visibly tightens enlarged pores on combination to oily skin.</p>
+        <button onclick="addToBag('Sébiaclear Mat+Pores Matifiant', 19, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+      <!-- 31. Spirial Déo-Crème Anti-Transpirant -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="personal-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img31.jpg" alt="Spirial Déo-Crème Anti-Transpirant SVR" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Spirial Déo-Crème Anti-Transpirant</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">SVR · Personal Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$18</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">48H intense anti-perspirant deodorant cream — fragrance-free, no white or yellow marks, for sensitive skin.</p>
+        <button onclick="addToBag('Spirial Déo-Crème Anti-Transpirant', 18, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+      <!-- 32. Whitening Roll-On Deo — Cotton Candy -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="personal-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img32.jpg" alt="Whitening Roll-On Deo — Cotton Candy Beesline" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Whitening Roll-On Deo — Cotton Candy</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Beesline · Personal Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$9</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Natural 48HR whitening antiperspirant with a sweet Cotton Candy scent. Brightening 4-in-1 formula, 0% aluminium.</p>
+        <button onclick="addToBag('Whitening Roll-On Deo — Cotton Candy', 9, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+      <!-- 33. Whitening Roll-On Deo — Beauty Pearl -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="personal-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img33.jpg" alt="Whitening Roll-On Deo — Beauty Pearl Beesline" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Whitening Roll-On Deo — Beauty Pearl</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Beesline · Personal Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$9</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Natural 48HR whitening antiperspirant with a delicate Beauty Pearl scent. Brightening 4-in-1 formula.</p>
+        <button onclick="addToBag('Whitening Roll-On Deo — Beauty Pearl', 9, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+      <!-- 34. Whitening Roll-On Deo — Super Dry -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="personal-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img34.jpg" alt="Whitening Roll-On Deo — Super Dry Beesline" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Whitening Roll-On Deo — Super Dry</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Beesline · Personal Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$9</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Men's 72HR whitening super-dry antiperspirant with silver power. 1-minute dry, no trace, active fresh.</p>
+        <button onclick="addToBag('Whitening Roll-On Deo — Super Dry', 9, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+      <!-- 35. Whitening Roll-On Deo — Elder Rose -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="personal-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img35.jpg" alt="Whitening Roll-On Deo — Elder Rose Beesline" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Whitening Roll-On Deo — Elder Rose</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Beesline · Personal Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$9</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Natural 48HR whitening antiperspirant with a romantic Elder Rose scent. Brightening 4-in-1 formula.</p>
+        <button onclick="addToBag('Whitening Roll-On Deo — Elder Rose', 9, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+      <!-- 36. Whitening Roll-On Deo — Cool Breeze -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="personal-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img36.jpg" alt="Whitening Roll-On Deo — Cool Breeze Beesline" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Whitening Roll-On Deo — Cool Breeze</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Beesline · Personal Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$9</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Natural 48HR whitening antiperspirant with a refreshing Cool Breeze scent. Brightening 4-in-1 formula.</p>
+        <button onclick="addToBag('Whitening Roll-On Deo — Cool Breeze', 9, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+      <!-- 37. Crème Topialyse Nourrissante -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img37.jpg" alt="Crème Topialyse Nourrissante SVR" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Crème Topialyse Nourrissante</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">SVR · Skincare</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$25</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Nourishing ultra-melting cream that soothes for 48H — for sensitive, dry and uncomfortable skin.</p>
+        <button onclick="addToBag('Crème Topialyse Nourrissante', 25, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+      <!-- 38. 3-in-1 Micellar Cleansing Water -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="skincare">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img38.jpg" alt="3-in-1 Micellar Cleansing Water Beesline" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">3-in-1 Micellar Cleansing Water</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Beesline · Skincare</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$5</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Plant-derived micellar water that removes makeup, hydrates and soothes — for face, eyes and lips.</p>
+        <button onclick="addToBag('3-in-1 Micellar Cleansing Water', 5, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+      <!-- 39. Whitening Roll-On Deo — Invisible Touch -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="personal-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img39.jpg" alt="Whitening Roll-On Deo — Invisible Touch Beesline" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Whitening Roll-On Deo — Invisible Touch</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Beesline · Personal Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$9</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Natural 48HR whitening antiperspirant — fragrance-free formula for sensitive skin. 4-in-1 brightening action.</p>
+        <button onclick="addToBag('Whitening Roll-On Deo — Invisible Touch', 9, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+      <!-- 40. Whitening Roll-On Deo — Pacific Islands -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="personal-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img40.jpg" alt="Whitening Roll-On Deo — Pacific Islands Beesline" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Whitening Roll-On Deo — Pacific Islands</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Beesline · Personal Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$9</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Natural 48HR whitening antiperspirant with a tropical Pacific Islands scent. Brightening 4-in-1 formula.</p>
+        <button onclick="addToBag('Whitening Roll-On Deo — Pacific Islands', 9, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+      <!-- 41. Whitening Roll-On Deo — Arabian Oud -->
+      <article class="group product-hidden product-extra animate-on-scroll" data-category="personal-care">
+        <div class="relative overflow-hidden bg-[#f5f1ea] rounded-sm mb-5 aspect-[4/5]">
+          <img src="images/img41.jpg" alt="Whitening Roll-On Deo — Arabian Oud Beesline" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl text-[#1a1a1a] mb-1" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Whitening Roll-On Deo — Arabian Oud</h3>
+            <p class="text-xs uppercase tracking-[0.18em] text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">Beesline · Personal Care</p>
+          </div>
+          <span class="text-lg text-[#2d5a4f]" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">$9</span>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70" style="font-family: 'Inter', sans-serif;">Natural 48HR whitening antiperspirant with a rich Arabian Oud scent. Brightening 4-in-1 formula.</p>
+        <button onclick="addToBag('Whitening Roll-On Deo — Arabian Oud', 9, this)" class="mt-4 w-full py-3 border border-[#2d5a4f]/30 text-sm text-[#2d5a4f] tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300 flex items-center justify-center gap-2" style="font-family: 'Inter', sans-serif;">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          Add to Bag
+        </button>
+      </article>
+
+            <!-- Guidance CTA card — always last -->
+      <article class="group animate-on-scroll hidden lg:flex flex-col justify-center items-center text-center bg-gradient-to-br from-[#2d5a4f] to-[#1a1a1a] p-10 rounded-sm aspect-[4/5] mb-5">
+        <div class="w-14 h-14 rounded-full bg-[#c9a962]/20 flex items-center justify-center mb-6 ring-1 ring-[#c9a962]/40">
+          <i data-lucide="sparkles" class="w-6 h-6 text-[#c9a962]"></i>
+        </div>
+        <h3 class="text-2xl text-white mb-4" style="font-family: 'Cormorant Garamond', serif; font-weight: 500;">Need <span class="italic text-[#c9a962]">Guidance?</span></h3>
+        <p class="text-sm leading-relaxed text-white/70 mb-8" style="font-family: 'Inter', sans-serif;">
+          Visit us in Tripoli for a personalized consultation with our pharmacy specialists.
+        </p>
+        <a href="#contact" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#c9a962] text-[#1a1a1a] text-sm tracking-wide hover:bg-[#c9a962]/90 transition-all duration-300" style="font-family: 'Inter', sans-serif;">
+          Get in Touch
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </article>
+
+    </div>
+
+    <div class="mt-12 text-center animate-on-scroll">
+      <button id="show-more-btn" class="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-[#2d5a4f]/40 text-[#2d5a4f] text-sm tracking-wide hover:bg-[#2d5a4f] hover:text-white hover:border-[#2d5a4f] transition-all duration-300" style="font-family: 'Inter', sans-serif;">
+        Show All 41 Products
+        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <div class="mt-8 text-center animate-on-scroll">
+      <p class="text-sm text-[#1a1a1a]/60" style="font-family: 'Inter', sans-serif;">
+        Free consultation with every purchase · Available in-store at our Tripoli location
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  // ── Shop filter & show-more logic ──────────────────────────────────────────
+  let currentFilter = 'all';
+  let allExpanded = false;
+
+  function filterShop(cat) {
+    currentFilter = cat;
+    // Expand all products when a category filter is active (so hidden ones are also filterable)
+    if (cat !== 'all') {
+      document.querySelectorAll('.product-extra').forEach(el => {
+        el.classList.remove('product-hidden');
+        el.classList.add('visible');
+      });
+      allExpanded = true;
+      document.getElementById('show-more-btn').style.display = 'none';
+    } else if (!allExpanded) {
+      // Restore initial state: only first batch visible
+      document.querySelectorAll('.product-extra').forEach(el => {
+        el.classList.add('product-hidden');
+      });
+      document.getElementById('show-more-btn').style.display = '';
+    }
+
+    // Update filter button styles
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.toggle('active-filter', btn.dataset.filter === cat);
+    });
+
+    // Show/hide articles by category
+    const articles = document.querySelectorAll('#product-grid article[data-category]');
+    let visible = 0;
+    articles.forEach(el => {
+      const match = cat === 'all' || el.dataset.category === cat;
+      if (match) {
+        el.classList.remove('product-filtered-out');
+        visible++;
+      } else {
+        el.classList.add('product-filtered-out');
+      }
+    });
+
+    // Update count
+    const countEl = document.getElementById('product-count');
+    if (countEl) {
+      const label = cat === 'all' ? 'all 28 products' : `${visible} product${visible !== 1 ? 's' : ''} in this category`;
+      countEl.textContent = `Showing ${label}`;
+    }
+  }
+
+  // Show-more button
+  (function() {
+    const btn = document.getElementById('show-more-btn');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.product-extra').forEach(el => {
+          el.classList.remove('product-hidden');
+          requestAnimationFrame(() => el.classList.add('visible'));
+        });
+        allExpanded = true;
+        btn.style.display = 'none';
+        const countEl = document.getElementById('product-count');
+        if (countEl) countEl.textContent = 'Showing all 41 products';
+      });
+    }
+  })();
+</script>
+
+<footer class="relative overflow-hidden" style="background: #1a1a1a; color: #ffffff;">
+  <div class="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl opacity-10" style="background: #2d5a4f;"></div>
+
+  <div class="relative max-w-6xl mx-auto px-6 sm:px-8 py-16 md:py-20">
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+
+      <!-- Brand -->
+      <div class="lg:col-span-2">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: #2d5a4f;">
+            <i data-lucide="leaf" class="w-5 h-5" style="color: #ffffff;"></i>
+          </div>
+          <h3 class="text-2xl" style="font-family: 'Cormorant Garamond', serif; color: #ffffff; font-weight: 500;">Bahsas Care</h3>
+        </div>
+        <p class="text-base leading-relaxed mb-6 max-w-md" style="color: rgba(255,255,255,0.75); font-family: 'Inter', sans-serif;">
+          Tripoli's trusted destination for premium pharmaceuticals, skincare, and wellness. Where pharmaceutical expertise meets curated beauty care.
+        </p>
+        <div class="flex gap-3">
+          <a href="#" class="w-10 h-10 rounded-full border flex items-center justify-center transition-all hover:-translate-y-1 duration-300" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.75);" onmouseover="this.style.background='#c9a962'; this.style.color='#ffffff'; this.style.borderColor='#c9a962'" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.75)'; this.style.borderColor='rgba(255,255,255,0.2)'">
+            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+          </a>
+          <a href="#" class="w-10 h-10 rounded-full border flex items-center justify-center transition-all hover:-translate-y-1 duration-300" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.75);" onmouseover="this.style.background='#c9a962'; this.style.color='#ffffff'; this.style.borderColor='#c9a962'" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.75)'; this.style.borderColor='rgba(255,255,255,0.2)'">
+            <i data-lucide="message-circle" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <h4 class="text-xs uppercase tracking-[0.2em] mb-5" style="color: #c9a962; font-family: 'Inter', sans-serif; font-weight: 500;">Explore</h4>
+        <ul class="space-y-3" style="font-family: 'Inter', sans-serif;">
+          <li><a href="#services" class="transition-all hover:-translate-y-0.5 inline-block duration-300 text-sm" style="color: rgba(255,255,255,0.75);" onmouseover="this.style.color='#c9a962'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Our Services</a></li>
+          <li><a href="#shop" class="transition-all hover:-translate-y-0.5 inline-block duration-300 text-sm" style="color: rgba(255,255,255,0.75);" onmouseover="this.style.color='#c9a962'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Shop</a></li>
+          <li><a href="#about" class="transition-all hover:-translate-y-0.5 inline-block duration-300 text-sm" style="color: rgba(255,255,255,0.75);" onmouseover="this.style.color='#c9a962'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">About Us</a></li>
+          <li><a href="#testimonials" class="transition-all hover:-translate-y-0.5 inline-block duration-300 text-sm" style="color: rgba(255,255,255,0.75);" onmouseover="this.style.color='#c9a962'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Reviews</a></li>
+          <li><a href="#faq" class="transition-all hover:-translate-y-0.5 inline-block duration-300 text-sm" style="color: rgba(255,255,255,0.75);" onmouseover="this.style.color='#c9a962'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">FAQ</a></li>
+          <li><a href="#contact" class="transition-all hover:-translate-y-0.5 inline-block duration-300 text-sm" style="color: rgba(255,255,255,0.75);" onmouseover="this.style.color='#c9a962'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Contact</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div>
+        <h4 class="text-xs uppercase tracking-[0.2em] mb-5" style="color: #c9a962; font-family: 'Inter', sans-serif; font-weight: 500;">Contact</h4>
+        <ul class="space-y-4" style="font-family: 'Inter', sans-serif;">
+          <li class="flex items-start gap-3">
+            <i data-lucide="phone" class="w-4 h-4 mt-1 shrink-0" style="color: #c9a962;"></i>
+            <a href="tel:+96176350138" class="transition-colors text-sm" style="color: rgba(255,255,255,0.75);" onmouseover="this.style.color='#c9a962'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">+961 76 350 138</a>
+          </li>
+          <li class="flex items-start gap-3">
+            <i data-lucide="clock" class="w-4 h-4 mt-1 shrink-0" style="color: #c9a962;"></i>
+            <span class="text-sm" style="color: rgba(255,255,255,0.75);">9:00 AM – 9:00 PM</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4" style="border-color: rgba(255,255,255,0.12);">
+      <p class="text-sm" style="color: rgba(255,255,255,0.6); font-family: 'Inter', sans-serif;">
+        © 2024 Bahsas Care Pharmacy. All rights reserved.
+      </p>
+      <div class="flex items-center gap-2 text-sm" style="color: rgba(255,255,255,0.6); font-family: 'Inter', sans-serif;">
+        <i data-lucide="shield-check" class="w-4 h-4" style="color: #c9a962;"></i>
+        <span>Licensed Pharmacy</span>
+      </div>
+    </div>
+  </div>
+</footer>
+</div>
+
+<!-- Floating Bag Button -->
+<button id="bag-fab" aria-label="Open bag" onclick="openCart()">
+  <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+  <span id="bag-count" style="display:none;">0</span>
+</button>
+
+<!-- Cart Overlay -->
+<div id="cart-overlay" onclick="closeCart()"></div>
+
+<!-- Cart Panel -->
+<aside id="cart-panel">
+  <div class="flex items-center justify-between px-6 py-5 border-b" style="border-color: rgba(45,90,79,0.15);">
+    <h3 class="text-2xl" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a; font-weight: 500;">Your Bag</h3>
+    <button onclick="closeCart()" aria-label="Close bag" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#f5f1ea] transition-colors">
+      <i data-lucide="x" class="w-5 h-5 text-[#1a1a1a]"></i>
+    </button>
+  </div>
+
+  <div id="cart-items" class="flex-1 overflow-y-auto px-6 py-4">
+    <p class="cart-empty-msg" id="cart-empty-msg">Your bag is empty. Browse the shop and add a few favorites.</p>
+  </div>
+
+  <div class="px-6 py-5 border-t space-y-4" style="border-color: rgba(45,90,79,0.15); background: #ffffff;">
+    <div class="flex items-center justify-between">
+      <span class="text-sm uppercase tracking-wider" style="font-family: 'Inter', sans-serif; color: #1a1a1a;">Estimated Total</span>
+      <span id="cart-total" class="text-2xl" style="font-family: 'Cormorant Garamond', serif; color: #2d5a4f; font-weight: 500;">$0</span>
+    </div>
+
+    <div>
+      <label for="cart-name" class="block text-xs uppercase tracking-wider mb-2" style="color: #2d5a4f; font-family: 'Inter', sans-serif;">Your Name</label>
+      <input type="text" id="cart-name" placeholder="John Doe" class="w-full px-4 py-3 rounded-xl border outline-none" style="background: #f5f1ea; border-color: rgba(45,90,79,0.3); color: #1a1a1a; font-family: 'Inter', sans-serif;">
+    </div>
+
+    <div>
+      <label for="cart-phone" class="block text-xs uppercase tracking-wider mb-2" style="color: #2d5a4f; font-family: 'Inter', sans-serif;">Phone Number</label>
+      <input type="tel" id="cart-phone" placeholder="+961 ..." class="w-full px-4 py-3 rounded-xl border outline-none" style="background: #f5f1ea; border-color: rgba(45,90,79,0.3); color: #1a1a1a; font-family: 'Inter', sans-serif;">
+    </div>
+
+    <p id="cart-form-error" class="text-xs text-center" style="color:#b3473f; font-family:'Inter', sans-serif; display:none;">Please enter your name and phone number.</p>
+
+    <button id="cart-checkout-btn" onclick="checkoutWhatsApp()" class="w-full px-6 py-4 rounded-xl text-base font-medium flex items-center justify-center gap-2 transition-all duration-300 hover:-translate-y-0.5" style="background: #2d5a4f; color: #ffffff; font-family: 'Inter', sans-serif;">
+      <i data-lucide="message-circle" class="w-5 h-5"></i>
+      Checkout on WhatsApp
+    </button>
+  </div>
+</aside>
+
+<script>
+  lucide.createIcons();
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+  const contactForm = document.getElementById('contact-form');
+  const formStatus = document.getElementById('form-status');
+  const submitBtn = document.getElementById('submit-btn');
+  if (contactForm) {
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Sending...';
+      submitBtn.disabled = true;
+      try {
+        const formData = new FormData(contactForm);
+        const response = await fetch('https://zgnpmogdjnnhpwewavnr.supabase.co/functions/v1/contact-form-submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            projectId: '{{PROJECT_ID}}',
+            name: formData.get('name'),
+            email: formData.get('email'),
+            message: formData.get('message')
+          })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          formStatus.textContent = 'Message sent successfully!';
+          formStatus.className = 'text-sm text-green-600';
+          contactForm.reset();
+        } else {
+          formStatus.textContent = data.error || 'Failed to send message.';
+          formStatus.className = 'text-sm text-red-600';
+        }
+      } catch (error) {
+        formStatus.textContent = 'Network error. Please try again.';
+        formStatus.className = 'text-sm text-red-600';
+      } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+  }
+
+  // ===== Bag / Cart logic =====
+  const WHATSAPP_NUMBER = '96176350138';
+  let bag = [];
+
+  function renderBag() {
+    const itemsEl = document.getElementById('cart-items');
+    const countEl = document.getElementById('bag-count');
+    const totalEl = document.getElementById('cart-total');
+    const emptyMsg = document.getElementById('cart-empty-msg');
+
+    const totalQty = bag.reduce((sum, i) => sum + i.qty, 0);
+    countEl.textContent = totalQty;
+    countEl.style.display = totalQty > 0 ? 'flex' : 'none';
+
+    const totalPrice = bag.reduce((sum, i) => sum + i.price * i.qty, 0);
+    totalEl.textContent = '$' + totalPrice.toFixed(2).replace(/\.00$/, '');
+
+    if (bag.length === 0) {
+      itemsEl.innerHTML = '';
+      itemsEl.appendChild(emptyMsg);
+      emptyMsg.style.display = 'block';
+      return;
+    }
+
+    itemsEl.innerHTML = bag.map((item, idx) => `
+      <div class="flex items-center justify-between gap-3 py-3 border-b" style="border-color: rgba(45,90,79,0.1);">
+        <div class="flex-1 min-w-0">
+          <p class="text-base truncate" style="font-family: 'Cormorant Garamond', serif; color: #1a1a1a; font-weight: 500;">${item.name}</p>
+          <p class="text-xs" style="font-family: 'Inter', sans-serif; color: rgba(26,26,26,0.6);">$${item.price} each</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="changeQty(${idx}, -1)" class="w-7 h-7 rounded-full border flex items-center justify-center text-sm" style="border-color: rgba(45,90,79,0.3); color:#2d5a4f;">−</button>
+          <span class="text-sm w-5 text-center" style="font-family: 'Inter', sans-serif; color:#1a1a1a;">${item.qty}</span>
+          <button onclick="changeQty(${idx}, 1)" class="w-7 h-7 rounded-full border flex items-center justify-center text-sm" style="border-color: rgba(45,90,79,0.3); color:#2d5a4f;">+</button>
+          <button onclick="removeItem(${idx})" aria-label="Remove" class="w-7 h-7 rounded-full flex items-center justify-center text-sm hover:bg-[#f5f1ea]" style="color:#b3473f;">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    `).join('');
+    lucide.createIcons();
+  }
+
+  function addToBag(name, price, btnEl) {
+    const existing = bag.find(i => i.name === name);
+    if (existing) {
+      existing.qty += 1;
+    } else {
+      bag.push({ name, price, qty: 1 });
+    }
+    renderBag();
+
+    if (btnEl) {
+      const original = btnEl.innerHTML;
+      btnEl.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Added';
+      lucide.createIcons();
+      btnEl.disabled = true;
+      setTimeout(() => {
+        btnEl.innerHTML = original;
+        lucide.createIcons();
+        btnEl.disabled = false;
+      }, 1100);
+    }
+
+    openCart();
+  }
+
+  function changeQty(idx, delta) {
+    if (!bag[idx]) return;
+    bag[idx].qty += delta;
+    if (bag[idx].qty <= 0) bag.splice(idx, 1);
+    renderBag();
+  }
+
+  function removeItem(idx) {
+    bag.splice(idx, 1);
+    renderBag();
+  }
+
+  function openCart() {
+    document.getElementById('cart-overlay').classList.add('open');
+    document.getElementById('cart-panel').classList.add('open');
+  }
+
+  function closeCart() {
+    document.getElementById('cart-overlay').classList.remove('open');
+    document.getElementById('cart-panel').classList.remove('open');
+  }
+
+  function checkoutWhatsApp() {
+    const nameEl = document.getElementById('cart-name');
+    const phoneEl = document.getElementById('cart-phone');
+    const errorEl = document.getElementById('cart-form-error');
+    const name = nameEl.value.trim();
+    const phone = phoneEl.value.trim();
+
+    if (bag.length === 0) {
+      errorEl.textContent = 'Your bag is empty. Add a product first.';
+      errorEl.style.display = 'block';
+      return;
+    }
+    if (!name || !phone) {
+      errorEl.textContent = 'Please enter your name and phone number.';
+      errorEl.style.display = 'block';
+      return;
+    }
+    errorEl.style.display = 'none';
+
+    const totalPrice = bag.reduce((sum, i) => sum + i.price * i.qty, 0);
+    const productLines = bag.map(i => `- ${i.name} x${i.qty} ($${(i.price * i.qty).toFixed(2).replace(/\.00$/, '')})`).join('\n');
+
+    const message =
+`Hello Bahsas Care, I'd like to place an order.
+
+Name: ${name}
+Phone: ${phone}
+
+Products:
+${productLines}
+
+Estimated Total: $${totalPrice.toFixed(2).replace(/\.00$/, '')}`;
+
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  renderBag();
+</script>
+</body>
+</html>
